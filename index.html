@@ -1,46 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Comprehensive English Test</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>English Grammar and Vocabulary Exam</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <main class="container">
-    <header class="hero">
-      <h1>Comprehensive English Test</h1>
-      <p>Grammar & Vocabulary Online Exam</p>
-    </header>
-
-    <section class="student-card">
-      <label>Student Name
-        <input type="text" id="studentName" placeholder="Write your name here" />
-      </label>
-      <label>Class
-        <input type="text" id="studentClass" placeholder="Class" />
-      </label>
+    <section class="hero">
+      <h1>English Grammar and Vocabulary Exam</h1>
+      <p>Choose the correct answer. After finishing, the grade and correct answers will appear.</p>
     </section>
 
-    <form id="examForm">
-      <section>
-        <h2>Part A: Grammar</h2>
-        <p class="instructions">Choose the correct answer from the words in parentheses.</p>
-        <div id="grammarQuestions"></div>
-      </section>
+    <section class="student-box">
+      <label for="studentName">Student Name</label>
+      <input type="text" id="studentName" placeholder="Write your name here">
+    </section>
 
-      <section>
-        <h2>Part B: Vocabulary</h2>
-        <p class="instructions">Use the word bank to complete each sentence.</p>
-        <div class="word-bank" id="wordBank"></div>
-        <div id="vocabularyQuestions"></div>
-      </section>
+    <form id="examForm"></form>
 
-      <button type="button" id="finishBtn">Finish Exam & Show Grade</button>
-    </form>
+    <div class="actions">
+      <button id="submitBtn" type="button">Finish Exam</button>
+      <button id="resetBtn" type="button" class="secondary">Reset</button>
+    </div>
 
-    <section id="resultBox" class="result-box hidden"></section>
-    <section id="answerKeyBox" class="answer-key hidden"></section>
+    <section id="result" class="result hidden"></section>
+    <section id="answerKey" class="answer-key hidden"></section>
   </main>
 
   <script src="script.js"></script>
