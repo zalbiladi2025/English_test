@@ -8,20 +8,18 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=20260910-3" />
 </head>
 <body>
   <div class="app-shell">
     <header class="topbar">
       <div class="brand">
         <div class="brand-mark">⌨</div>
-        <div>
-          <h1>English Keyboard Trainer</h1>
-          <p>Touch typing practice for trainees</p>
-        </div>
+        <div><h1>English Keyboard Trainer</h1><p>Touch typing practice for trainees</p></div>
       </div>
       <div class="top-actions">
-        <button id="soundToggle" class="ghost-btn" type="button" aria-label="Toggle sound">🔊 Sound</button>
+        <button id="leaderboardTopBtn" class="ghost-btn" type="button">🏆 Leaderboard</button>
+        <button id="soundToggle" class="ghost-btn" type="button">🔊 Sound</button>
         <button id="resetApp" class="ghost-btn" type="button">Reset</button>
       </div>
     </header>
@@ -33,196 +31,70 @@
             <span class="eyebrow">TRAIN • PRACTICE • IMPROVE</span>
             <h2>Build typing speed with the correct keyboard rows.</h2>
             <p>Practice the home row, top row, bottom row, and number row with live accuracy, speed, and progress tracking.</p>
-            <div class="feature-pills">
-              <span>⚡ Live WPM</span>
-              <span>🎯 Accuracy</span>
-              <span>🏆 Best score</span>
-              <span>📊 Saved results</span>
-            </div>
+            <div class="feature-pills"><span>⚡ Live WPM</span><span>🎯 Accuracy</span><span>🏆 Leaderboard</span><span>📊 Saved results</span></div>
           </div>
-
           <form id="registerForm" class="card register-card">
-            <div class="card-heading">
-              <span class="step-badge">1</span>
-              <div>
-                <h3>Trainee Registration</h3>
-                <p>Enter your details before starting.</p>
-              </div>
-            </div>
-
-            <label>
-              Full name
-              <input id="traineeName" name="traineeName" type="text" autocomplete="name" placeholder="e.g. Ahmed Ali" required maxlength="60" />
-            </label>
-
-            <label>
-              Trainee number
-              <input id="traineeNumber" name="traineeNumber" type="text" inputmode="numeric" placeholder="e.g. 2026001" required maxlength="20" />
-            </label>
-
-            <label>
-              Group / class <span class="optional">optional</span>
-              <input id="traineeGroup" name="traineeGroup" type="text" placeholder="e.g. Group A" maxlength="30" />
-            </label>
-
+            <div class="card-heading"><span class="step-badge">1</span><div><h3>Trainee Registration</h3><p>Enter your details before starting.</p></div></div>
+            <label>Full name<input id="traineeName" name="traineeName" type="text" autocomplete="name" placeholder="e.g. Ahmed Ali" required maxlength="60" /></label>
+            <label>Trainee number<input id="traineeNumber" name="traineeNumber" type="text" inputmode="numeric" placeholder="e.g. 2026001" required maxlength="20" /></label>
+            <label>Group / class <span class="optional">optional</span><input id="traineeGroup" name="traineeGroup" type="text" placeholder="e.g. Group A" maxlength="30" /></label>
             <button class="primary-btn wide" type="submit">Start Training →</button>
-            <p class="privacy-note">Your details are stored in this browser unless Google Sheets is connected.</p>
+            <p class="privacy-note">Your trainee number is used for trainer records and is never shown on the public leaderboard.</p>
           </form>
         </div>
       </section>
 
       <section id="dashboardView" class="view">
         <div class="welcome-row">
-          <div>
-            <span class="eyebrow">WELCOME BACK</span>
-            <h2 id="welcomeName">Choose your training row</h2>
-            <p>Select a lesson. Your progress and best results are saved.</p>
-          </div>
-          <div class="student-chip">
-            <span id="studentInitials">ST</span>
-            <div>
-              <strong id="studentNameMini">Student</strong>
-              <small id="studentNumberMini">#0000</small>
-            </div>
-          </div>
+          <div><span class="eyebrow">WELCOME BACK</span><h2 id="welcomeName">Choose your training row</h2><p>Select a lesson. Your progress and best results are saved.</p></div>
+          <div class="student-mini"><div id="studentInitials" class="avatar">ST</div><div><strong id="studentNameMini">Student</strong><span id="studentNumberMini">#0000</span></div></div>
         </div>
-
-        <div id="lessonGrid" class="lesson-grid"></div>
-
-        <div class="dashboard-lower">
-          <section class="card stats-card">
-            <div class="section-title-row">
-              <div>
-                <span class="eyebrow">MY PROGRESS</span>
-                <h3>Performance summary</h3>
-              </div>
-              <button id="viewResultsBtn" class="ghost-btn" type="button">View attempts</button>
-            </div>
-            <div class="stats-grid">
-              <div class="stat-box"><strong id="dashAttempts">0</strong><span>Attempts</span></div>
-              <div class="stat-box"><strong id="dashBestWpm">0</strong><span>Best WPM</span></div>
-              <div class="stat-box"><strong id="dashAccuracy">0%</strong><span>Best accuracy</span></div>
-              <div class="stat-box"><strong id="dashCompleted">0/4</strong><span>Rows completed</span></div>
-            </div>
-          </section>
-
-          <section class="card challenge-card">
-            <span class="eyebrow">DAILY CHALLENGE</span>
-            <h3>Reach 95% accuracy</h3>
-            <p>Complete any row with at least 95% accuracy and 20 WPM.</p>
-            <div class="challenge-progress"><span id="challengeBar"></span></div>
-            <small id="challengeText">Not completed yet</small>
-          </section>
+        <div class="stats-grid">
+          <div class="stat-card"><span>Attempts</span><strong id="dashAttempts">0</strong></div>
+          <div class="stat-card"><span>Best WPM</span><strong id="dashBestWpm">0</strong></div>
+          <div class="stat-card"><span>Best Accuracy</span><strong id="dashAccuracy">0%</strong></div>
+          <div class="stat-card"><span>Rows Completed</span><strong id="dashCompleted">0/4</strong></div>
         </div>
+        <section class="panel">
+          <div class="section-title-row"><div><span class="eyebrow">MY PROGRESS</span><h3>Choose a keyboard row</h3></div><div class="inline-actions"><button id="viewLeaderboardBtn" class="secondary-btn" type="button">🏆 Leaderboard</button><button id="viewResultsBtn" class="ghost-btn" type="button">Attempt History</button></div></div>
+          <div id="lessonGrid" class="lesson-grid"></div>
+        </section>
+        <section class="challenge-card"><div><span class="eyebrow">DAILY CHALLENGE</span><h3>Accuracy Challenge</h3><p>Complete any row with at least 95% accuracy and 20 WPM.</p></div><div class="challenge-progress"><div class="progress-track"><div id="challengeBar" class="progress-fill"></div></div><span id="challengeText">Not completed yet</span></div></section>
       </section>
 
       <section id="trainerView" class="view">
-        <div class="trainer-head">
-          <button id="backToDashboard" class="ghost-btn" type="button">← Lessons</button>
-          <div class="lesson-title-wrap">
-            <span id="lessonLabel" class="eyebrow">HOME ROW</span>
-            <span id="exerciseCounter" class="exercise-counter">Exercise 1 of 10</span>
-            <h2 id="lessonTitle">Home Row Practice</h2>
-          </div>
-          <div class="mode-select">
-            <label for="durationSelect">Time</label>
-            <select id="durationSelect">
-              <option value="30">30 sec</option>
-              <option value="60" selected>1 min</option>
-              <option value="120">2 min</option>
-            </select>
-          </div>
+        <div class="trainer-header">
+          <button id="backToDashboard" class="ghost-btn" type="button">← Dashboard</button>
+          <div><span id="lessonLabel" class="eyebrow">HOME ROW</span><span id="exerciseCounter" class="exercise-counter">Exercise 1 of 10</span><h2 id="lessonTitle">Home Row Practice</h2></div>
+          <div class="trainer-actions"><select id="durationSelect"><option value="30">30 sec</option><option value="60" selected>1 min</option><option value="120">2 min</option></select><button id="restartLesson" class="ghost-btn" type="button">Restart</button></div>
         </div>
-
-        <div class="metrics-row">
-          <div class="metric"><span>Time</span><strong id="timeMetric">60</strong></div>
-          <div class="metric"><span>WPM</span><strong id="wpmMetric">0</strong></div>
-          <div class="metric"><span>Accuracy</span><strong id="accuracyMetric">100%</strong></div>
-          <div class="metric"><span>Errors</span><strong id="errorsMetric">0</strong></div>
-        </div>
-
-        <section class="card typing-card">
-          <div class="typing-topline">
-            <span>Type the text below</span>
-            <span id="typingStatus" class="status-pill">Ready</span>
-          </div>
-          <div id="textPrompt" class="text-prompt" aria-live="polite"></div>
-          <input id="typingInput" class="typing-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Click here and start typing…" />
-          <div class="progress-track"><span id="textProgress"></span></div>
-          <div class="typing-actions">
-            <button id="restartLesson" class="secondary-btn" type="button">↻ Restart</button>
-            <button id="newTextBtn" class="secondary-btn" type="button">Next exercise</button>
-          </div>
-        </section>
-
-        <section class="keyboard-card">
-          <div class="keyboard-hint">Follow the highlighted key and use the correct finger.</div>
-          <div id="keyboard" class="keyboard" aria-label="Virtual keyboard"></div>
-          <div id="fingerHint" class="finger-hint">Place your fingers on the home row.</div>
-        </section>
+        <div class="metrics-row"><div class="metric"><span>TIME</span><strong id="timeMetric">60</strong></div><div class="metric"><span>WPM</span><strong id="wpmMetric">0</strong></div><div class="metric"><span>ACCURACY</span><strong id="accuracyMetric">100%</strong></div><div class="metric"><span>ERRORS</span><strong id="errorsMetric">0</strong></div></div>
+        <section class="typing-card"><div class="typing-card-top"><span id="typingStatus" class="status-chip">Ready</span><button id="newTextBtn" class="secondary-btn" type="button">Next exercise</button></div><div id="textPrompt" class="text-prompt"></div><input id="typingInput" type="text" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="Start typing here..." /><div class="progress-track"><div id="textProgress" class="progress-fill"></div></div></section>
+        <section class="keyboard-panel"><div id="fingerHint" class="finger-hint">Place your fingers on the home row.</div><div id="keyboard" class="keyboard"></div></section>
       </section>
 
       <section id="resultView" class="view">
-        <div class="result-wrap">
-          <div class="result-icon" id="resultIcon">🏆</div>
-          <span class="eyebrow">SESSION COMPLETE</span>
-          <h2 id="resultHeading">Great work!</h2>
-          <p id="resultSubtext">Your result has been saved.</p>
-
-          <div class="result-score-grid">
-            <div><strong id="resultWpm">0</strong><span>WPM</span></div>
-            <div><strong id="resultAccuracy">0%</strong><span>Accuracy</span></div>
-            <div><strong id="resultErrors">0</strong><span>Errors</span></div>
-            <div><strong id="resultTyped">0</strong><span>Characters</span></div>
-          </div>
-
-          <div id="medalCard" class="medal-card">
-            <span id="medalEmoji">🥉</span>
-            <div><strong id="medalTitle">Bronze</strong><small id="medalText">Keep practicing to level up.</small></div>
-          </div>
-
-          <div class="result-actions">
-            <button id="sendResultBtn" class="primary-btn" type="button" onclick="if(state.results[0]) sendToSheet(state.results[0]);">Send Result to Trainer</button>
-            <button id="retryBtn" class="secondary-btn" type="button">Try Again</button>
-            <button id="continueBtn" class="secondary-btn" type="button">Back to Lessons</button>
-          </div>
-          <p id="syncStatus" class="privacy-note" style="margin-top:12px;text-align:center;">If the result does not appear automatically, press Send Result to Trainer.</p>
+        <div class="result-card card"><div id="resultIcon" class="result-icon">🏆</div><span class="eyebrow">SESSION COMPLETE</span><h2 id="resultHeading">Great work!</h2><p id="resultSubtext"></p>
+          <div class="result-grid"><div><strong id="resultWpm">0</strong><span>WPM</span></div><div><strong id="resultAccuracy">0%</strong><span>Accuracy</span></div><div><strong id="resultErrors">0</strong><span>Errors</span></div><div><strong id="resultTyped">0</strong><span>Characters</span></div></div>
+          <div class="medal-box"><span id="medalEmoji">🥉</span><div><strong id="medalTitle">Bronze</strong><p id="medalText">Keep practicing.</p></div></div>
+          <div class="result-actions"><button id="sendResultBtn" class="primary-btn" type="button">Send Result to Trainer</button><button id="retryBtn" class="secondary-btn" type="button">Try Again</button><button id="continueBtn" class="ghost-btn" type="button">Back to Lessons</button></div>
+          <p id="syncStatus" class="privacy-note">Send each completed attempt once to your trainer.</p>
         </div>
       </section>
 
-      <section id="resultsView" class="view">
-        <div class="results-head">
-          <div>
-            <span class="eyebrow">ATTEMPT HISTORY</span>
-            <h2>Saved Results</h2>
-            <p>Results saved on this device.</p>
-          </div>
-          <button id="resultsBackBtn" class="ghost-btn" type="button">← Back</button>
-        </div>
-        <div class="card table-card">
-          <div class="table-toolbar">
-            <strong>Training attempts</strong>
-            <button id="downloadCsvBtn" class="secondary-btn" type="button">Download CSV</button>
-          </div>
-          <div class="table-scroll">
-            <table>
-              <thead><tr><th>Date</th><th>Row</th><th>WPM</th><th>Accuracy</th><th>Errors</th><th>Time</th></tr></thead>
-              <tbody id="resultsTableBody"></tbody>
-            </table>
-          </div>
-        </div>
+      <section id="resultsView" class="view"><section class="panel"><div class="section-title-row"><div><span class="eyebrow">ATTEMPT HISTORY</span><h2>My results</h2></div><div><button id="downloadCsvBtn" class="secondary-btn" type="button">Export CSV</button><button id="resultsBackBtn" class="ghost-btn" type="button">Back</button></div></div><div class="table-wrap"><table><thead><tr><th>Date</th><th>Row</th><th>WPM</th><th>Accuracy</th><th>Errors</th><th>Time</th></tr></thead><tbody id="resultsTableBody"></tbody></table></div></section></section>
+
+      <section id="leaderboardView" class="view">
+        <section class="panel leaderboard-panel">
+          <div class="section-title-row"><div><span class="eyebrow">CLASS CHALLENGE</span><h2>🏆 Leaderboard</h2><p class="leaderboard-note">For privacy, only initials and group are shown. Trainee numbers remain private.</p></div><div><button id="refreshLeaderboardBtn" class="secondary-btn" type="button">Refresh</button><button id="leaderboardBackBtn" class="ghost-btn" type="button">Back</button></div></div>
+          <div id="leaderboardStatus" class="leaderboard-status">Loading leaderboard…</div>
+          <div class="table-wrap"><table class="leaderboard-table"><thead><tr><th>Rank</th><th>Trainee</th><th>Group</th><th>Best WPM</th><th>Accuracy</th><th>Best Row</th></tr></thead><tbody id="leaderboardBody"></tbody></table></div>
+        </section>
       </section>
     </main>
-
-    <footer>
-      <span>English Keyboard Trainer</span>
-      <span>Designed for classroom typing practice</span>
-    </footer>
+    <footer><span>English Keyboard Trainer</span><span>Designed for classroom typing practice</span></footer>
   </div>
-
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <canvas id="confettiCanvas" class="confetti-canvas"></canvas>
-
-  <script src="app.js?v=20260910-2"></script>
+  <div id="toast" class="toast" role="status"></div><canvas id="confettiCanvas"></canvas>
+  <script src="app.js?v=20260910-4"></script>
 </body>
 </html>
