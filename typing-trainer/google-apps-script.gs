@@ -5,46 +5,64 @@ function doPost(e) {
   const lock = LockService.getScriptLock();
   try {
     lock.waitLock(10000);
-
     const data = JSON.parse((e && e.postData && e.postData.contents) || '{}');
-    const attemptId = safeText(data.id, 80);
-    if (!attemptId) return jsonResponse({ ok: false, error: 'Missing attempt ID' });
-
     const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_NAME);
     if (!sheet) throw new Error('Results sheet not found');
 
-    // Server-side idempotency: the same training attempt can never be stored twice.
-    const lastRow = sheet.getLastRow();
-    if (lastRow > 1) {
-      const match = sheet
-        .getRange(2, 12, lastRow - 1, 1)
-        .createTextFinder(attemptId)
-        .matchEntireCell(true)
-        .findNext();
-      if (match) return jsonResponse({ ok: true, duplicate: true, attemptId: attemptId });
+    if (Array.isArray(data.batchResults)) {
+      const results = data.batchResults.slice(0, 20);
+      let inserted = 0;
+      let duplicates = 0;
+      results.forEach(function(item) {
+        const outcome = appendAttemptIfNew_(sheet, item || {});
+        if (outcome === 'inserted') inserted++;
+        if (outcome === 'duplicate') duplicates++;
+      });
+      return jsonResponse({ ok: true, batch: true, inserted: inserted, duplicates: duplicates });
     }
 
-    sheet.appendRow([
-      new Date(),
-      safeText(data.studentName, 80),
-      safeText(data.studentNumber, 30),
-      safeText(data.group, 50),
-      safeText(data.lessonTitle || data.lesson, 80),
-      safeNumber(data.exercise, 1),
-      safeNumber(data.wpm, 0),
-      safeNumber(data.accuracy, 0),
-      safeNumber(data.errors, 0),
-      safeNumber(data.characters, 0),
-      safeNumber(data.duration, 0),
-      attemptId
-    ]);
-
-    return jsonResponse({ ok: true, duplicate: false, attemptId: attemptId });
+    const outcome = appendAttemptIfNew_(sheet, data);
+    return jsonResponse({
+      ok: true,
+      duplicate: outcome === 'duplicate',
+      attemptId: safeText(data.id, 80)
+    });
   } catch (err) {
     return jsonResponse({ ok: false, error: String(err) });
   } finally {
     try { lock.releaseLock(); } catch (_) {}
   }
+}
+
+function appendAttemptIfNew_(sheet, data) {
+  const attemptId = safeText(data.id, 80);
+  if (!attemptId) throw new Error('Missing attempt ID');
+
+  const lastRow = sheet.getLastRow();
+  if (lastRow > 1) {
+    const match = sheet
+      .getRange(2, 12, lastRow - 1, 1)
+      .createTextFinder(attemptId)
+      .matchEntireCell(true)
+      .findNext();
+    if (match) return 'duplicate';
+  }
+
+  sheet.appendRow([
+    new Date(),
+    safeText(data.studentName, 80),
+    safeText(data.studentNumber, 30),
+    safeText(data.group, 50),
+    safeText(data.lessonTitle || data.lesson, 80),
+    safeNumber(data.exercise, 1),
+    safeNumber(data.wpm, 0),
+    safeNumber(data.accuracy, 0),
+    safeNumber(data.errors, 0),
+    safeNumber(data.characters, 0),
+    safeNumber(data.duration, 0),
+    attemptId
+  ]);
+  return 'inserted';
 }
 
 function doGet(e) {
@@ -65,7 +83,7 @@ function doGet(e) {
         const accuracy = Number(r[7] || 0);
         const score = wpm * (accuracy / 100);
         const row = {
-          initials: publicInitials(r[1]),
+          studentName: safeText(r[1], 80),
           group: safeText(r[3], 50),
           lessonTitle: safeText(r[4], 80),
           wpm: wpm,
@@ -84,7 +102,7 @@ function doGet(e) {
         .map(function (r, i) {
           return {
             rank: i + 1,
-            initials: r.initials,
+            studentName: r.studentName,
             group: r.group,
             wpm: r.wpm,
             accuracy: r.accuracy,
@@ -95,7 +113,6 @@ function doGet(e) {
       return publicResponse({ ok: true, leaderboard: leaderboard }, e);
     }
 
-    // Do not expose the private Results sheet through a public GET endpoint.
     return publicResponse({ ok: true, service: 'EnglishTyping', status: 'ready' }, e);
   } catch (err) {
     return publicResponse({ ok: false, error: String(err) }, e);
@@ -104,7 +121,6 @@ function doGet(e) {
 
 function safeText(value, maxLength) {
   let text = String(value == null ? '' : value).trim().slice(0, maxLength || 100);
-  // Prevent spreadsheet formula injection from trainee-entered fields.
   if (/^[=+\-@]/.test(text)) text = "'" + text;
   return text;
 }
@@ -112,12 +128,6 @@ function safeText(value, maxLength) {
 function safeNumber(value, fallback) {
   const n = Number(value);
   return Number.isFinite(n) ? n : Number(fallback || 0);
-}
-
-function publicInitials(name) {
-  const parts = String(name || '').trim().split(/\s+/).filter(Boolean).slice(0, 2);
-  if (!parts.length) return 'T';
-  return parts.map(function (part) { return part.charAt(0).toUpperCase(); }).join('.') + '.';
 }
 
 function publicResponse(obj, e) {
