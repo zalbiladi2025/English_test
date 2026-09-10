@@ -1,9 +1,8 @@
 // Phase 2 enhancements: client-side idempotency + privacy-safe leaderboard UI.
-// The public leaderboard API is intentionally disabled until the privacy-safe
-// Apps Script version in google-apps-script.gs has been deployed by the trainer.
+// Privacy-safe Apps Script deployment confirmed by the trainer; public leaderboard is enabled.
 
 const SENT_ATTEMPTS_KEY = 'ekt_sent_attempt_ids';
-const PRIVACY_SAFE_LEADERBOARD_ENABLED = false;
+const PRIVACY_SAFE_LEADERBOARD_ENABLED = true;
 
 function getSentAttemptIds() {
   try { return new Set(JSON.parse(localStorage.getItem(SENT_ATTEMPTS_KEY) || '[]').map(String)); }
@@ -20,7 +19,6 @@ function isAttemptSent(id) {
   return getSentAttemptIds().has(String(id));
 }
 
-// Override the base sender with one-attempt/one-send behavior on this browser.
 function sendToSheet(result) {
   if (!SHEET_WEB_APP_URL || !result) return;
   const btn = $('sendResultBtn');
@@ -105,12 +103,6 @@ function loadLeaderboard() {
   const status = $('leaderboardStatus');
   if (!body || !status) return;
 
-  if (!PRIVACY_SAFE_LEADERBOARD_ENABLED) {
-    body.innerHTML = '';
-    status.innerHTML = '<strong>Leaderboard is being activated.</strong><br>The trainer dashboard is ready. Public rankings will appear after the privacy-safe Google Apps Script update is deployed.';
-    return;
-  }
-
   status.textContent = 'Loading leaderboard…';
   body.innerHTML = '';
   const callbackName = '__ektLeaderboardCallback_' + Date.now();
@@ -162,7 +154,6 @@ window.addEventListener('DOMContentLoaded', () => {
   if (backBtn) backBtn.addEventListener('click', returnFromLeaderboard);
   if (refreshBtn) refreshBtn.addEventListener('click', loadLeaderboard);
 
-  // Keep the manual send button synchronized when the result screen is displayed.
   const observer = new MutationObserver(() => {
     if ($('resultView') && $('resultView').classList.contains('active')) updateSendButtonForCurrentResult();
   });
