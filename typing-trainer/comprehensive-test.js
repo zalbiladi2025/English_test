@@ -3,15 +3,25 @@
 
 (() => {
   const TEST_STORAGE_KEY = 'ekt_comprehensive_test_results';
-  const TEST_DURATION = 180;
+  const TEST_DURATION = 600;
   const TARGET_WPM = 40;
-  const testText = [
-    'asdf jkl; sad dad lad ask all fall salad flask',
-    'qwerty uiop type write power quiet route upper tower',
-    'zxcv bnm,./ zoom van cabin mix banana civic minimum',
-    '1234567890 2026 100 250 500 750 900 24680 13579',
-    'A skilled trainee types accurately and quickly across every keyboard row in 2026.'
-  ].join(' ');
+
+  const passageBlocks = [
+    'asdf jkl; sad dad lad ask all fall salad flask. qwerty uiop type write power quiet route upper tower. zxcv bnm,./ zoom van cabin mix banana civic minimum. 1234567890 2026 100 250 500 750 900 24680 13579.',
+    'A skilled trainee types accurately and quickly across every keyboard row. Good typing begins with correct posture, relaxed shoulders, curved fingers, and steady rhythm. Keep your eyes on the screen and return your fingers to the home row after every movement.',
+    'Practice makes each key easier to reach. The left hand controls many letters on the left side, while the right hand controls letters on the right side. Use the correct finger for each key and press the space bar gently with the thumb.',
+    'Accuracy should come before speed. A fast typist who makes many errors loses time fixing mistakes, while an accurate typist can gradually increase speed. Work calmly, keep a steady pace, and focus on typing each word correctly.',
+    'The top row includes q w e r t y u i o p. The home row includes a s d f g h j k l and the semicolon. The bottom row includes z x c v b n m comma period and slash. The number row includes 1 2 3 4 5 6 7 8 9 0.',
+    'During this assessment, type continuously for ten minutes. Do not copy and paste. Use correct finger placement, maintain concentration, and try to balance speed with precision. The final score rewards both accuracy and words per minute.',
+    'Modern computer work requires reliable keyboard skills. Students use typing for reports, programming, email, research, data entry, and online learning. Improving keyboard control can save time and make daily computer tasks easier.',
+    'A confident trainee can move from letters to words, then from words to complete sentences without looking at the keyboard. Regular practice develops muscle memory, and muscle memory helps the hands find the correct keys automatically.',
+    'Numbers are important in many technical tasks. Practice typing 2026 2027 2028 2030 2050 2100, then 10 20 30 40 50 60 70 80 90 100, and finally 125 250 375 500 625 750 875 1000.',
+    'Good keyboard technique uses small controlled movements. Avoid hitting the keys too hard. Keep both wrists comfortable, use a light touch, and allow the fingers to move smoothly from the home position to the upper and lower rows.',
+    'The goal of this final test is not only to type quickly. It also checks whether the trainee can maintain accuracy over a longer period. Ten minutes gives a better picture of real typing ability than a very short speed test.',
+    'Stay focused until the timer reaches zero. If you make an error, continue typing instead of stopping for too long. Keep a natural rhythm and remember that every correct character helps both your accuracy and your speed score.'
+  ];
+
+  const testText = Array.from({ length: 8 }, () => passageBlocks.join(' ')).join(' ');
 
   let test = {
     active: false,
@@ -45,7 +55,7 @@
         <p>Covers Home, Top, Bottom and Number rows. Final grade is based on speed and accuracy.</p>
       </div>
       <div class="challenge-progress test-launch-box">
-        <strong>Grade: /10</strong>
+        <strong>10 minutes • Grade: /10</strong>
         <button id="comprehensiveTestBtn" class="primary-btn" type="button">Start Comprehensive Test</button>
       </div>`);
     dashboard.appendChild(testCard);
@@ -59,10 +69,10 @@
           <span class="exercise-counter">All keyboard rows</span>
           <h2>Final Typing Assessment</h2>
         </div>
-        <div class="trainer-actions"><span class="status-chip">3 minutes</span></div>
+        <div class="trainer-actions"><span class="status-chip">10 minutes</span></div>
       </div>
       <div class="metrics-row">
-        <div class="metric"><span>TIME</span><strong id="testTime">180</strong></div>
+        <div class="metric"><span>TIME</span><strong id="testTime">600</strong></div>
         <div class="metric"><span>WPM</span><strong id="testWpm">0</strong></div>
         <div class="metric"><span>ACCURACY</span><strong id="testAccuracy">100%</strong></div>
         <div class="metric"><span>ERRORS</span><strong id="testErrors">0</strong></div>
@@ -75,7 +85,7 @@
       </section>
       <section class="panel test-rules">
         <strong>Assessment rule</strong>
-        <p>Accuracy = 60% of the grade. Speed = 40% of the grade. 40 WPM earns the full speed score.</p>
+        <p>Test duration: 10 minutes. Accuracy = 60% of the grade. Speed = 40% of the grade. 40 WPM earns the full speed score.</p>
       </section>`);
 
     const resultView = el('section', { id: 'comprehensiveTestResultView', class: 'view' }, `
@@ -279,8 +289,6 @@
     if (!rows.some(r => r.id === result.id)) rows.unshift(result);
     localStorage.setItem(TEST_STORAGE_KEY, JSON.stringify(rows.slice(0, 100)));
 
-    // Temporary compatibility: also save to the current trainer endpoint.
-    // Azure/SharePoint will replace this endpoint after Microsoft connection is configured.
     const payload = {
       id: result.id,
       studentName: result.studentName,
