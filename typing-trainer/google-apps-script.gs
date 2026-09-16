@@ -15,7 +15,9 @@ function doPost(e) {
 
     if (!practiceSheet) throw new Error('Results sheet not found');
 
-    // Batch results are the 10 normal training exercises and stay in Results.
+    // تأكد دائمًا أن ورقة الاختبار موجودة قبل استقبال أي نتيجة.
+    getOrCreateTestSheet_(spreadsheet);
+
     if (Array.isArray(data.batchResults)) {
       const results = data.batchResults.slice(0, 20);
       let inserted = 0;
@@ -35,7 +37,6 @@ function doPost(e) {
       });
     }
 
-    // Comprehensive test results go to their own sheet.
     if (isComprehensiveTest_(data)) {
       const testSheet = getOrCreateTestSheet_(spreadsheet);
       const outcome = appendTestAttemptIfNew_(testSheet, data);
@@ -48,7 +49,6 @@ function doPost(e) {
       });
     }
 
-    // Normal single training result.
     const outcome = appendPracticeAttemptIfNew_(practiceSheet, data);
 
     return jsonResponse({
@@ -98,7 +98,6 @@ function appendTestAttemptIfNew_(sheet, data) {
   const wpm = Math.max(0, safeNumber(data.wpm, 0));
   const accuracy = Math.max(0, Math.min(100, safeNumber(data.accuracy, 0)));
 
-  // Recalculate the grade on the server so it cannot be changed in the browser.
   const accuracyScore = round1_((accuracy / 100) * 6);
   const speedScore = round1_(Math.min(4, Math.max(0, (wpm / TEST_TARGET_WPM) * 4)));
   const finalGrade = round1_(accuracyScore + speedScore);
@@ -166,6 +165,14 @@ function ensureTestHeaders_(sheet) {
   }
 }
 
+// شغّل هذه الدالة مرة واحدة بعد لصق الكود وقبل الاختبارات.
+// ستنشئ ورقة Comprehensive Test Results فورًا بدون انتظار أي اختبار.
+function setupTestSheet() {
+  const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = getOrCreateTestSheet_(spreadsheet);
+  return sheet.getName();
+}
+
 function hasAttemptId_(sheet, columnNumber, attemptId) {
   const lastRow = sheet.getLastRow();
   if (lastRow <= 1) return false;
@@ -201,10 +208,13 @@ function gradeLevel_(grade) {
 function doGet(e) {
   try {
     const action = String((e && e.parameter && e.parameter.action) || 'health').toLowerCase();
+    const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+
+    // مجرد فتح رابط Web App يضمن وجود ورقة الاختبار مسبقًا.
+    getOrCreateTestSheet_(spreadsheet);
 
     if (action === 'leaderboard') {
-      // The public leaderboard continues to use training results only.
-      const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_NAME);
+      const sheet = spreadsheet.getSheetByName(SHEET_NAME);
       if (!sheet) throw new Error('Results sheet not found');
 
       const values = sheet.getDataRange().getValues();
@@ -250,7 +260,12 @@ function doGet(e) {
       return publicResponse({ ok: true, leaderboard: leaderboard }, e);
     }
 
-    return publicResponse({ ok: true, service: 'EnglishTyping', status: 'ready' }, e);
+    return publicResponse({
+      ok: true,
+      service: 'EnglishTyping',
+      status: 'ready',
+      testSheet: TEST_SHEET_NAME
+    }, e);
   } catch (err) {
     return publicResponse({ ok: false, error: String(err) }, e);
   }
