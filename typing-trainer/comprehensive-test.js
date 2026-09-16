@@ -1,27 +1,23 @@
-// Comprehensive typing test: all keyboard rows + automatic grade out of 10.
-// Grade = 60% accuracy + 40% speed. Full speed score is reached at 40 WPM.
+// اختبار شامل للكتابة: جميع صفوف لوحة المفاتيح + درجة من 10
+// الدرجة = 60% للدقة + 40% للسرعة. الدرجة الكاملة للسرعة عند 40 WPM.
 
 (() => {
   const TEST_STORAGE_KEY = 'ekt_comprehensive_test_results';
   const TEST_DURATION = 600;
   const TARGET_WPM = 40;
 
+  // نص مبسط مناسب للصف الأول الثانوي، مع تغطية صفوف الحروف والأرقام.
   const passageBlocks = [
-    'asdf jkl; sad dad lad ask all fall salad flask. qwerty uiop type write power quiet route upper tower. zxcv bnm,./ zoom van cabin mix banana civic minimum. 1234567890 2026 100 250 500 750 900 24680 13579.',
-    'A skilled trainee types accurately and quickly across every keyboard row. Good typing begins with correct posture, relaxed shoulders, curved fingers, and steady rhythm. Keep your eyes on the screen and return your fingers to the home row after every movement.',
-    'Practice makes each key easier to reach. The left hand controls many letters on the left side, while the right hand controls letters on the right side. Use the correct finger for each key and press the space bar gently with the thumb.',
-    'Accuracy should come before speed. A fast typist who makes many errors loses time fixing mistakes, while an accurate typist can gradually increase speed. Work calmly, keep a steady pace, and focus on typing each word correctly.',
-    'The top row includes q w e r t y u i o p. The home row includes a s d f g h j k l and the semicolon. The bottom row includes z x c v b n m comma period and slash. The number row includes 1 2 3 4 5 6 7 8 9 0.',
-    'During this assessment, type continuously for ten minutes. Do not copy and paste. Use correct finger placement, maintain concentration, and try to balance speed with precision. The final score rewards both accuracy and words per minute.',
-    'Modern computer work requires reliable keyboard skills. Students use typing for reports, programming, email, research, data entry, and online learning. Improving keyboard control can save time and make daily computer tasks easier.',
-    'A confident trainee can move from letters to words, then from words to complete sentences without looking at the keyboard. Regular practice develops muscle memory, and muscle memory helps the hands find the correct keys automatically.',
-    'Numbers are important in many technical tasks. Practice typing 2026 2027 2028 2030 2050 2100, then 10 20 30 40 50 60 70 80 90 100, and finally 125 250 375 500 625 750 875 1000.',
-    'Good keyboard technique uses small controlled movements. Avoid hitting the keys too hard. Keep both wrists comfortable, use a light touch, and allow the fingers to move smoothly from the home position to the upper and lower rows.',
-    'The goal of this final test is not only to type quickly. It also checks whether the trainee can maintain accuracy over a longer period. Ten minutes gives a better picture of real typing ability than a very short speed test.',
-    'Stay focused until the timer reaches zero. If you make an error, continue typing instead of stopping for too long. Keep a natural rhythm and remember that every correct character helps both your accuracy and your speed score.'
+    'Students use computers every day. Good typing helps them write homework, search for information, and finish school tasks.',
+    'Keep your hands relaxed and look at the screen. Use the correct finger for each key and return your fingers to the home row.',
+    'The top row has q w e r t y u i o p. The home row has a s d f g h j k l. The bottom row has z x c v b n m.',
+    'Numbers are useful in school and computer work. Practice 1 2 3 4 5 6 7 8 9 0 and type 2026 100 250 500 750 900.',
+    'Accuracy is more important than speed at first. Type calmly, keep a steady rhythm, and try to make fewer mistakes.',
+    'Practice helps you improve. A good typist can write emails, reports, notes, and simple computer commands faster.'
   ];
 
-  const testText = Array.from({ length: 8 }, () => passageBlocks.join(' ')).join(' ');
+  // طول مناسب لاختبار عشر دقائق للطلاب المبتدئين والمتوسطين.
+  const testText = Array.from({ length: 4 }, () => passageBlocks.join(' ')).join(' ');
 
   let test = {
     active: false,
@@ -50,64 +46,65 @@
 
     const testCard = el('section', { class: 'challenge-card comprehensive-test-card' }, `
       <div>
-        <span class="eyebrow">FINAL TYPING TEST</span>
-        <h3>Comprehensive Keyboard Test</h3>
-        <p>Covers Home, Top, Bottom and Number rows. Final grade is based on speed and accuracy.</p>
+        <span class="eyebrow">الاختبار النهائي للكتابة</span>
+        <h3>اختبار لوحة المفاتيح الشامل</h3>
+        <p>يشمل الصف العلوي وصف الارتكاز والصف السفلي وصف الأرقام. الدرجة تعتمد على السرعة والدقة.</p>
       </div>
       <div class="challenge-progress test-launch-box">
-        <strong>10 minutes • Grade: /10</strong>
-        <button id="comprehensiveTestBtn" class="primary-btn" type="button">Start Comprehensive Test</button>
+        <strong>10 دقائق • الدرجة من 10</strong>
+        <button id="comprehensiveTestBtn" class="primary-btn" type="button">ابدأ الاختبار الشامل</button>
       </div>`);
     dashboard.appendChild(testCard);
 
     const main = document.querySelector('main');
     const testView = el('section', { id: 'comprehensiveTestView', class: 'view' }, `
       <div class="trainer-header">
-        <button id="testBackBtn" class="ghost-btn" type="button">← Dashboard</button>
+        <button id="testBackBtn" class="ghost-btn" type="button">← العودة للوحة الرئيسية</button>
         <div>
-          <span class="eyebrow">COMPREHENSIVE TEST</span>
-          <span class="exercise-counter">All keyboard rows</span>
-          <h2>Final Typing Assessment</h2>
+          <span class="eyebrow">الاختبار الشامل</span>
+          <span class="exercise-counter">جميع صفوف لوحة المفاتيح</span>
+          <h2>اختبار الكتابة النهائي</h2>
         </div>
-        <div class="trainer-actions"><span class="status-chip">10 minutes</span></div>
+        <div class="trainer-actions"><span class="status-chip">10 دقائق</span></div>
       </div>
       <div class="metrics-row">
-        <div class="metric"><span>TIME</span><strong id="testTime">600</strong></div>
-        <div class="metric"><span>WPM</span><strong id="testWpm">0</strong></div>
-        <div class="metric"><span>ACCURACY</span><strong id="testAccuracy">100%</strong></div>
-        <div class="metric"><span>ERRORS</span><strong id="testErrors">0</strong></div>
+        <div class="metric"><span>الوقت</span><strong id="testTime">600</strong></div>
+        <div class="metric"><span>كلمة/دقيقة</span><strong id="testWpm">0</strong></div>
+        <div class="metric"><span>الدقة</span><strong id="testAccuracy">100%</strong></div>
+        <div class="metric"><span>الأخطاء</span><strong id="testErrors">0</strong></div>
       </div>
-      <section class="typing-card">
-        <div class="typing-card-top"><span id="testStatus" class="status-chip">Ready</span><strong>Do not paste text</strong></div>
-        <div id="testPrompt" class="text-prompt"></div>
-        <input id="testInput" type="text" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="Start typing here..." />
+      <section class="typing-card test-typing-card">
+        <div class="typing-card-top"><span id="testStatus" class="status-chip">جاهز</span><strong>اكتب النص الإنجليزي كما يظهر أمامك</strong></div>
+        <div id="testPrompt" class="text-prompt test-prompt-window" dir="ltr"></div>
+        <label class="test-input-label" for="testInput">اكتب هنا:</label>
+        <input id="testInput" dir="ltr" type="text" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="ابدأ الكتابة هنا..." />
         <div class="progress-track"><div id="testProgress" class="progress-fill"></div></div>
       </section>
       <section class="panel test-rules">
-        <strong>Assessment rule</strong>
-        <p>Test duration: 10 minutes. Accuracy = 60% of the grade. Speed = 40% of the grade. 40 WPM earns the full speed score.</p>
+        <strong>طريقة احتساب الدرجة</strong>
+        <p>مدة الاختبار 10 دقائق. الدقة = 60% من الدرجة، والسرعة = 40%. الحصول على 40 كلمة في الدقيقة يمنح الدرجة الكاملة للسرعة.</p>
       </section>`);
 
     const resultView = el('section', { id: 'comprehensiveTestResultView', class: 'view' }, `
       <div class="result-card card">
         <div class="result-icon">📝</div>
-        <span class="eyebrow">FINAL TEST RESULT</span>
-        <h2>Comprehensive Keyboard Test</h2>
+        <span class="eyebrow">نتيجة الاختبار النهائي</span>
+        <h2>اختبار لوحة المفاتيح الشامل</h2>
         <p id="testResultSummary"></p>
         <div class="test-grade-circle"><strong id="testGrade">0.0</strong><span>/10</span></div>
         <div class="result-grid">
-          <div><strong id="testResultWpm">0</strong><span>WPM</span></div>
-          <div><strong id="testResultAccuracy">0%</strong><span>Accuracy</span></div>
-          <div><strong id="testAccuracyPoints">0</strong><span>Accuracy points /6</span></div>
-          <div><strong id="testSpeedPoints">0</strong><span>Speed points /4</span></div>
+          <div><strong id="testResultWpm">0</strong><span>كلمة/دقيقة</span></div>
+          <div><strong id="testResultAccuracy">0%</strong><span>الدقة</span></div>
+          <div><strong id="testAccuracyPoints">0</strong><span>درجة الدقة /6</span></div>
+          <div><strong id="testSpeedPoints">0</strong><span>درجة السرعة /4</span></div>
         </div>
-        <div class="medal-box"><span>🎓</span><div><strong id="testLevel">Result</strong><p id="testFeedback"></p></div></div>
+        <div class="medal-box"><span>🎓</span><div><strong id="testLevel">النتيجة</strong><p id="testFeedback"></p></div></div>
         <div class="result-actions">
-          <button id="saveTestResultBtn" class="primary-btn" type="button">Save Result</button>
-          <button id="retryTestBtn" class="secondary-btn" type="button">Retry Test</button>
-          <button id="testResultBackBtn" class="ghost-btn" type="button">Back to Dashboard</button>
+          <button id="saveTestResultBtn" class="primary-btn" type="button">حفظ النتيجة</button>
+          <button id="retryTestBtn" class="secondary-btn" type="button">إعادة الاختبار</button>
+          <button id="testResultBackBtn" class="ghost-btn" type="button">العودة للوحة الرئيسية</button>
         </div>
-        <p id="testSaveStatus" class="privacy-note">The result is ready to be stored in the trainer records.</p>
+        <p id="testSaveStatus" class="privacy-note">النتيجة جاهزة للحفظ في سجل المدرب.</p>
       </div>`);
 
     main.appendChild(testView);
@@ -130,7 +127,7 @@
 
   function startTest() {
     if (!state.student) {
-      toast('Register first');
+      toast('سجّل بياناتك أولاً');
       return;
     }
     clearInterval(test.timerId);
@@ -145,17 +142,17 @@
     document.getElementById('testAccuracy').textContent = '100%';
     document.getElementById('testErrors').textContent = '0';
     document.getElementById('testProgress').style.width = '0%';
-    document.getElementById('testStatus').textContent = 'Ready';
+    document.getElementById('testStatus').textContent = 'جاهز';
     renderPrompt('');
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    setTimeout(() => input.focus(), 150);
+    setTimeout(() => input.focus({ preventScroll: true }), 200);
   }
 
   function startTimer() {
     if (test.started) return;
     test.started = true;
     test.startTime = Date.now();
-    document.getElementById('testStatus').textContent = 'Testing';
+    document.getElementById('testStatus').textContent = 'جاري الاختبار';
     test.timerId = setInterval(() => {
       const elapsed = Math.floor((Date.now() - test.startTime) / 1000);
       test.remaining = Math.max(0, TEST_DURATION - elapsed);
@@ -212,8 +209,15 @@
       let cls = 'char';
       if (i < typed.length) cls += typed[i] === ch ? ' correct' : ' incorrect';
       else if (i === typed.length) cls += ' current';
-      return `<span class="${cls}">${ch === ' ' ? '&nbsp;' : escapeHtml(ch)}</span>`;
+      return `<span class="${cls}" data-index="${i}">${ch === ' ' ? '&nbsp;' : escapeHtml(ch)}</span>`;
     }).join('');
+
+    // إبقاء الحرف الحالي مرئياً داخل نافذة النص دون تحريك الصفحة كلها.
+    const current = target.querySelector('.char.current');
+    if (current) {
+      const wanted = current.offsetTop - (target.clientHeight / 2) + (current.offsetHeight / 2);
+      target.scrollTop = Math.max(0, wanted);
+    }
   }
 
   function calculateGrade(wpm, accuracy) {
@@ -265,20 +269,20 @@
     document.getElementById('testResultAccuracy').textContent = `${result.accuracy}%`;
     document.getElementById('testAccuracyPoints').textContent = result.accuracyPoints.toFixed(1);
     document.getElementById('testSpeedPoints').textContent = result.speedPoints.toFixed(1);
-    document.getElementById('testResultSummary').textContent = `${result.studentName} • ${result.duration} seconds • ${result.characters} characters`;
+    document.getElementById('testResultSummary').textContent = `${result.studentName} • ${result.duration} ثانية • ${result.characters} حرفًا`;
 
-    let level = 'Needs Practice';
-    let feedback = 'Continue practicing accuracy first, then increase speed.';
-    if (result.grade >= 9) { level = 'Excellent'; feedback = 'Outstanding speed and accuracy.'; }
-    else if (result.grade >= 8) { level = 'Very Good'; feedback = 'Strong overall keyboard performance.'; }
-    else if (result.grade >= 7) { level = 'Good'; feedback = 'Good result with room to improve speed or accuracy.'; }
-    else if (result.grade >= 6) { level = 'Satisfactory'; feedback = 'Acceptable result. More practice will raise the score.'; }
+    let level = 'يحتاج إلى تدريب إضافي';
+    let feedback = 'ركز على الدقة أولاً ثم زد السرعة تدريجيًا.';
+    if (result.grade >= 9) { level = 'ممتاز'; feedback = 'أداء ممتاز في السرعة والدقة.'; }
+    else if (result.grade >= 8) { level = 'جيد جدًا'; feedback = 'أداء قوي ومتوازن في الكتابة.'; }
+    else if (result.grade >= 7) { level = 'جيد'; feedback = 'نتيجة جيدة ويمكن تحسين السرعة أو الدقة أكثر.'; }
+    else if (result.grade >= 6) { level = 'مقبول'; feedback = 'نتيجة مقبولة، والتدريب المنتظم سيرفع مستواك.'; }
     document.getElementById('testLevel').textContent = level;
     document.getElementById('testFeedback').textContent = feedback;
-    document.getElementById('testSaveStatus').textContent = 'Result ready to save to trainer records.';
+    document.getElementById('testSaveStatus').textContent = 'النتيجة جاهزة للحفظ في سجل المدرب.';
     const btn = document.getElementById('saveTestResultBtn');
     btn.disabled = false;
-    btn.textContent = 'Save Result';
+    btn.textContent = 'حفظ النتيجة';
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -302,30 +306,32 @@
       errors: result.errors,
       characters: result.characters,
       duration: result.duration,
-      grade: result.grade
+      grade: result.grade,
+      accuracyPoints: result.accuracyPoints,
+      speedPoints: result.speedPoints
     };
 
     const btn = document.getElementById('saveTestResultBtn');
     const status = document.getElementById('testSaveStatus');
     btn.disabled = true;
-    btn.textContent = 'Saving…';
+    btn.textContent = 'جارٍ الحفظ…';
     fetch(SHEET_WEB_APP_URL, { method: 'POST', mode: 'no-cors', keepalive: true, body: JSON.stringify(payload) })
       .then(() => {
-        btn.textContent = 'Saved ✓';
-        status.textContent = `Saved — Grade ${result.grade.toFixed(1)}/10`;
-        toast('Test result saved');
+        btn.textContent = 'تم الحفظ ✓';
+        status.textContent = `تم الحفظ — الدرجة ${result.grade.toFixed(1)}/10`;
+        toast('تم حفظ نتيجة الاختبار');
       })
       .catch(() => {
         btn.disabled = false;
-        btn.textContent = 'Try Saving Again';
-        status.textContent = 'Could not send the result. It is still saved on this device.';
+        btn.textContent = 'إعادة محاولة الحفظ';
+        status.textContent = 'تعذر إرسال النتيجة. ما زالت محفوظة على هذا الجهاز.';
       });
   }
 
   function attemptLeaveTest() {
     if (test.active && !test.finished) {
-      toast('Finish the comprehensive test before leaving');
-      document.getElementById('testInput').focus();
+      toast('أكمل الاختبار الشامل قبل المغادرة');
+      document.getElementById('testInput').focus({ preventScroll: true });
       return;
     }
     backToDashboard();
