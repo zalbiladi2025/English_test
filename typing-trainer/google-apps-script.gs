@@ -1,35 +1,63 @@
 const SPREADSHEET_ID = '1geCChxhXgigUpCseEpJXjBp_L_n1R_TECFxu4rHd-vU';
 const SHEET_NAME = 'Results';
+const TEST_SHEET_NAME = 'Comprehensive Test Results';
 const TEST_TARGET_WPM = 40;
 
 function doPost(e) {
   const lock = LockService.getScriptLock();
+
   try {
     lock.waitLock(10000);
+
     const data = JSON.parse((e && e.postData && e.postData.contents) || '{}');
-    const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_NAME);
-    if (!sheet) throw new Error('Results sheet not found');
+    const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const practiceSheet = spreadsheet.getSheetByName(SHEET_NAME);
 
-    ensureExtendedHeaders_(sheet);
+    if (!practiceSheet) throw new Error('Results sheet not found');
 
+    // Batch results are the 10 normal training exercises and stay in Results.
     if (Array.isArray(data.batchResults)) {
       const results = data.batchResults.slice(0, 20);
       let inserted = 0;
       let duplicates = 0;
+
       results.forEach(function(item) {
-        const outcome = appendAttemptIfNew_(sheet, item || {});
+        const outcome = appendPracticeAttemptIfNew_(practiceSheet, item || {});
         if (outcome === 'inserted') inserted++;
         if (outcome === 'duplicate') duplicates++;
       });
-      return jsonResponse({ ok: true, batch: true, inserted: inserted, duplicates: duplicates });
+
+      return jsonResponse({
+        ok: true,
+        batch: true,
+        inserted: inserted,
+        duplicates: duplicates
+      });
     }
 
-    const outcome = appendAttemptIfNew_(sheet, data);
+    // Comprehensive test results go to their own sheet.
+    if (isComprehensiveTest_(data)) {
+      const testSheet = getOrCreateTestSheet_(spreadsheet);
+      const outcome = appendTestAttemptIfNew_(testSheet, data);
+
+      return jsonResponse({
+        ok: true,
+        type: 'comprehensive-test',
+        duplicate: outcome === 'duplicate',
+        attemptId: safeText(data.id, 80)
+      });
+    }
+
+    // Normal single training result.
+    const outcome = appendPracticeAttemptIfNew_(practiceSheet, data);
+
     return jsonResponse({
       ok: true,
+      type: 'practice',
       duplicate: outcome === 'duplicate',
       attemptId: safeText(data.id, 80)
     });
+
   } catch (err) {
     return jsonResponse({ ok: false, error: String(err) });
   } finally {
@@ -37,39 +65,11 @@ function doPost(e) {
   }
 }
 
-function appendAttemptIfNew_(sheet, data) {
+function appendPracticeAttemptIfNew_(sheet, data) {
   const attemptId = safeText(data.id, 80);
   if (!attemptId) throw new Error('Missing attempt ID');
 
-  const lastRow = sheet.getLastRow();
-  if (lastRow > 1) {
-    const match = sheet
-      .getRange(2, 12, lastRow - 1, 1)
-      .createTextFinder(attemptId)
-      .matchEntireCell(true)
-      .findNext();
-    if (match) return 'duplicate';
-  }
-
-  const wpm = safeNumber(data.wpm, 0);
-  const accuracy = Math.max(0, Math.min(100, safeNumber(data.accuracy, 0)));
-  const isTest = String(data.lesson || '').toLowerCase() === 'comprehensive-test' ||
-    String(data.type || '').toLowerCase() === 'comprehensive test' ||
-    String(data.lessonTitle || '').toLowerCase().indexOf('comprehensive test') !== -1;
-
-  let resultType = 'Practice';
-  let accuracyScore = '';
-  let speedScore = '';
-  let finalGrade = '';
-  let gradeLevel = '';
-
-  if (isTest) {
-    resultType = 'Comprehensive Test';
-    accuracyScore = round1_((accuracy / 100) * 6);
-    speedScore = round1_(Math.min(4, Math.max(0, (wpm / TEST_TARGET_WPM) * 4)));
-    finalGrade = round1_(accuracyScore + speedScore);
-    gradeLevel = gradeLevel_(finalGrade);
-  }
+  if (hasAttemptId_(sheet, 12, attemptId)) return 'duplicate';
 
   sheet.appendRow([
     new Date(),
@@ -78,35 +78,111 @@ function appendAttemptIfNew_(sheet, data) {
     safeText(data.group, 50),
     safeText(data.lessonTitle || data.lesson, 100),
     safeNumber(data.exercise, 1),
+    safeNumber(data.wpm, 0),
+    Math.max(0, Math.min(100, safeNumber(data.accuracy, 0))),
+    safeNumber(data.errors, 0),
+    safeNumber(data.characters, 0),
+    safeNumber(data.duration, 0),
+    attemptId
+  ]);
+
+  return 'inserted';
+}
+
+function appendTestAttemptIfNew_(sheet, data) {
+  const attemptId = safeText(data.id, 80);
+  if (!attemptId) throw new Error('Missing attempt ID');
+
+  if (hasAttemptId_(sheet, 14, attemptId)) return 'duplicate';
+
+  const wpm = Math.max(0, safeNumber(data.wpm, 0));
+  const accuracy = Math.max(0, Math.min(100, safeNumber(data.accuracy, 0)));
+
+  // Recalculate the grade on the server so it cannot be changed in the browser.
+  const accuracyScore = round1_((accuracy / 100) * 6);
+  const speedScore = round1_(Math.min(4, Math.max(0, (wpm / TEST_TARGET_WPM) * 4)));
+  const finalGrade = round1_(accuracyScore + speedScore);
+  const gradeLevel = gradeLevel_(finalGrade);
+
+  sheet.appendRow([
+    new Date(),
+    safeText(data.studentName, 80),
+    safeText(data.studentNumber, 30),
+    safeText(data.group, 50),
     wpm,
     accuracy,
     safeNumber(data.errors, 0),
     safeNumber(data.characters, 0),
     safeNumber(data.duration, 0),
-    attemptId,
-    resultType,
     accuracyScore,
     speedScore,
     finalGrade,
-    gradeLevel
+    gradeLevel,
+    attemptId
   ]);
+
   return 'inserted';
 }
 
-function ensureExtendedHeaders_(sheet) {
+function getOrCreateTestSheet_(spreadsheet) {
+  let sheet = spreadsheet.getSheetByName(TEST_SHEET_NAME);
+
+  if (!sheet) {
+    sheet = spreadsheet.insertSheet(TEST_SHEET_NAME);
+  }
+
+  ensureTestHeaders_(sheet);
+  return sheet;
+}
+
+function ensureTestHeaders_(sheet) {
   const headers = [
-    'Result Type',
+    'Timestamp',
+    'Student Name',
+    'Trainee Number',
+    'Group',
+    'WPM',
+    'Accuracy %',
+    'Errors',
+    'Characters',
+    'Duration Seconds',
     'Accuracy Score /6',
     'Speed Score /4',
     'Final Grade /10',
-    'Grade Level'
+    'Grade Level',
+    'Attempt ID'
   ];
-  const current = sheet.getRange(1, 13, 1, 5).getValues()[0];
+
+  const current = sheet.getRange(1, 1, 1, headers.length).getValues()[0];
   let needsUpdate = false;
-  headers.forEach(function(h, i) {
-    if (String(current[i] || '').trim() !== h) needsUpdate = true;
+
+  headers.forEach(function(header, index) {
+    if (String(current[index] || '').trim() !== header) needsUpdate = true;
   });
-  if (needsUpdate) sheet.getRange(1, 13, 1, 5).setValues([headers]);
+
+  if (needsUpdate) {
+    sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+    sheet.setFrozenRows(1);
+  }
+}
+
+function hasAttemptId_(sheet, columnNumber, attemptId) {
+  const lastRow = sheet.getLastRow();
+  if (lastRow <= 1) return false;
+
+  const match = sheet
+    .getRange(2, columnNumber, lastRow - 1, 1)
+    .createTextFinder(attemptId)
+    .matchEntireCell(true)
+    .findNext();
+
+  return Boolean(match);
+}
+
+function isComprehensiveTest_(data) {
+  return String(data.lesson || '').toLowerCase() === 'comprehensive-test' ||
+    String(data.type || '').toLowerCase() === 'comprehensive test' ||
+    String(data.lessonTitle || '').toLowerCase().indexOf('comprehensive test') !== -1;
 }
 
 function round1_(value) {
@@ -127,6 +203,7 @@ function doGet(e) {
     const action = String((e && e.parameter && e.parameter.action) || 'health').toLowerCase();
 
     if (action === 'leaderboard') {
+      // The public leaderboard continues to use training results only.
       const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_NAME);
       if (!sheet) throw new Error('Results sheet not found');
 
@@ -135,10 +212,12 @@ function doGet(e) {
 
       values.slice(1).forEach(function (r) {
         if (!r[1] || !r[2]) return;
+
         const key = String(r[2]);
         const wpm = Number(r[6] || 0);
         const accuracy = Number(r[7] || 0);
         const score = wpm * (accuracy / 100);
+
         const row = {
           studentName: safeText(r[1], 80),
           group: safeText(r[3], 50),
@@ -147,6 +226,7 @@ function doGet(e) {
           accuracy: accuracy,
           score: score
         };
+
         if (!best[key] || score > best[key].score) best[key] = row;
       });
 
@@ -189,11 +269,13 @@ function safeNumber(value, fallback) {
 
 function publicResponse(obj, e) {
   const callback = String((e && e.parameter && e.parameter.callback) || '');
+
   if (callback && /^[A-Za-z_$][0-9A-Za-z_$.]*$/.test(callback)) {
     return ContentService
       .createTextOutput(callback + '(' + JSON.stringify(obj) + ');')
       .setMimeType(ContentService.MimeType.JAVASCRIPT);
   }
+
   return jsonResponse(obj);
 }
 
